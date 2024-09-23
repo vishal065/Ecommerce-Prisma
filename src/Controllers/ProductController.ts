@@ -43,7 +43,7 @@ const getAllProducts = async (req: Request, res: Response) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 5;
     const newPage = limit * (page - 1);
-
+ 
     const allProducts = await prisma.product.findMany({
       skip: newPage,
       take: limit,

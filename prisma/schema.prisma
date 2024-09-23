@@ -19,13 +19,15 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Address   Address[]
+  Product   Product[]
 
   @@map("users")
 }
@@ -36,8 +38,25 @@ model Product {
   description String   @db.Text //this is bec mysql it restrict to use certain number of character in database @db.Text this make the column text type in database. it is only req in mysql
   price       Decimal  @db.Decimal(10, 2) // Total 10 digits, 2 of which are after the decimal point
   tags        String
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("products")
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  line1     String
+  line2     String?
+  city      String
+  country   String
+  pincode   String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("address")
 }

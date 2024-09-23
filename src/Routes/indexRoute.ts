@@ -1,10 +1,11 @@
 import { Router } from "express";
-import authRoute from "./authRoute";
+import authRoute from "./userRoute";
 import adminRoute from "./adminRoute";
+import UserRoute from "./userRoute";
 
 const IndexRoute: Router = Router();
 
-IndexRoute.use("/auth", authRoute);
+IndexRoute.use("/user", UserRoute);
 IndexRoute.use("/admin", adminRoute);
 
 export default IndexRoute;
