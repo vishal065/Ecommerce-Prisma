@@ -30,6 +30,7 @@ model User {
   updatedAt                DateTime  @updatedAt
   Address                  Address[]
   Product                  Product[]
+  Cart                     Cart[]
 
   @@map("users")
 }
@@ -42,6 +43,7 @@ model Product {
   tags        String
   userId      Int
   user        User     @relation(fields: [userId], references: [id])
+  Cart        Cart[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -61,4 +63,18 @@ model Address {
   updatedAt DateTime @updatedAt
 
   @@map("address")
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, userId]) // Unique constraint on productId and userId
+  @@map("cart")
 }

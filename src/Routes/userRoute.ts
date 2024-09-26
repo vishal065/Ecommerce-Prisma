@@ -3,12 +3,15 @@ import authRoute from "./authRoute";
 import { AddressRoute } from "./addressRoute";
 import AuthMiddleware from "../Middlewares/AuthMiddleware";
 import { updateUser } from "../Controllers/User.controller";
+import { asyncHandler } from "../Utils/asyncHandler";
+import CartRouter from "./cartRoute";
 
 const UserRoute: Router = Router();
 
 UserRoute.use("/auth", authRoute);
 UserRoute.use("/address", AddressRoute);
+UserRoute.use("/cart", CartRouter);
 
-UserRoute.route("/update-user").put(AuthMiddleware, updateUser);
+UserRoute.route("/update-user").put(AuthMiddleware, asyncHandler(updateUser));
 
 export default UserRoute;

@@ -5,7 +5,9 @@ import { prisma } from "../DBconnect/DBconnect";
 import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
 import { BadRequestsException } from "../exceptions/badRequests";
-export const updateUser = async (req: Request, res: Response) => {
+import AuthRequest from "../types/AuthRequest";
+
+export const updateUser = async (req: AuthRequest, res: Response) => {
   const validatedData = UpdateUserValidator.parse(req.body);
   let shippingAddress: Address;
   let billingAddress: Address;
