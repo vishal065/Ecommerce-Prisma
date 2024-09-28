@@ -3,6 +3,7 @@ import { adminMiddleware } from "../Middlewares/adminMiddleware";
 import AuthMiddleware from "../Middlewares/AuthMiddleware";
 import {
   addProducts,
+  deleteProduct,
   getAllProducts,
   updateProduct,
 } from "../Controllers/ProductController";
@@ -19,5 +20,8 @@ productRoute
   .put([AuthMiddleware, adminMiddleware], asyncHandler(updateProduct));
 
 productRoute.route("/getAllProduct").get(asyncHandler(getAllProducts));
+productRoute
+  .route("/delete/:id")
+  .delete([AuthMiddleware, adminMiddleware], asyncHandler(deleteProduct));
 
 export default productRoute;

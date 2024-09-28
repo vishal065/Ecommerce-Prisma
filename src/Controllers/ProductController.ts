@@ -3,14 +3,16 @@ import { productValidator } from "../Validators/productValidation";
 import { prisma } from "../DBconnect/DBconnect";
 import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
+import AuthRequest from "../types/AuthRequest";
 
-const addProducts = async (req: Request, res: Response) => {
-  productValidator.parse(req.body);
+const addProducts = async (req: AuthRequest, res: Response) => {
+  const validatedData = productValidator.parse(req.body);
 
   const product = await prisma.product.create({
     data: {
-      ...req.body,
-      tags: req.body.tags.join(","),
+      ...validatedData,
+      tags: validatedData.tags.join(","),
+      userId: req.user?.id as number,
     },
   });
 
@@ -43,7 +45,7 @@ const getAllProducts = async (req: Request, res: Response) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 5;
     const newPage = limit * (page - 1);
- 
+
     const allProducts = await prisma.product.findMany({
       skip: newPage,
       take: limit,

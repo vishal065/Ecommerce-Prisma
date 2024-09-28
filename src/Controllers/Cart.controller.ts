@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { prisma } from "../DBconnect/DBconnect";
-import { CartValidation } from "../Validators/CartValidation";
+import { CartUpdateValidation, CartValidation } from "../Validators/CartValidation";
 import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
 import AuthRequest from "../types/AuthRequest";
+import { BadRequestsException } from "../exceptions/badRequests";
 
 export const AddToCart = async (req: AuthRequest, res: Response) => {
   const validationData = CartValidation.parse(req.body);
@@ -19,6 +20,15 @@ export const AddToCart = async (req: AuthRequest, res: Response) => {
         "product not found",
         ErrorCode.USER_NOT_FOUND
       );
+    }
+
+    const AlreadyExistInCart = await prisma.cart.findFirst({
+      where: { productId: validationData.productId },
+    });
+    console.log(AlreadyExistInCart);
+
+    if (AlreadyExistInCart) {
+      return res.status(400).json({ message: "item already exist in cart" });
     }
 
     const cart = await prisma.cart.upsert({
@@ -43,9 +53,9 @@ export const AddToCart = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const updateCart = async (req: Request, res: Response) => {
-  CartValidation.parse(req.body);
-    
+export const updateCart = async (req: AuthRequest, res: Response) => {
+  CartUpdateValidation.parse(req.body);
+
   try {
     const updatedCart = await prisma.cart.update({
       where: {
@@ -54,7 +64,7 @@ export const updateCart = async (req: Request, res: Response) => {
       data: { ...req.body, userId: req.user?.id },
     });
 
-    return res.status(200).json({ data: updateCart });
+    return res.status(200).json({ data: updatedCart });
   } catch (error) {
     throw new NotFoundException(
       "Faild to update to cart",
@@ -63,5 +73,15 @@ export const updateCart = async (req: Request, res: Response) => {
   }
 };
 
-
-export const getCart = async (req: Request, res: Response) => {};
+export const getCart = async (req: AuthRequest, res: Response) => {
+  const cart = await prisma.cart.findMany({
+    where: {
+      userId: req.user?.id,
+    },
+    include: { product: true },
+  });
+  if (!cart) {
+    return res.status(200).json({ message: "Cart is empty" });
+  }
+  return res.status(200).json({ data: cart });
+};

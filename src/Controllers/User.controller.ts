@@ -58,6 +58,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       },
       data: validatedData,
     });
+    return res.status(200).json(updatedUser);
   } catch (error) {
     throw new NotFoundException(
       "Address not found",

@@ -18,6 +18,14 @@ enum Role {
   USER
 }
 
+enum OrderEventStatus {
+  PENDING
+  ACCEPTED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
 model User {
   id                       Int       @id @default(autoincrement())
   name                     String
@@ -31,21 +39,23 @@ model User {
   Address                  Address[]
   Product                  Product[]
   Cart                     Cart[]
+  Order                    Order[]
 
   @@map("users")
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String   @db.Text //this is bec mysql it restrict to use certain number of character in database @db.Text this make the column text type in database. it is only req in mysql
-  price       Decimal  @db.Decimal(10, 2) // Total 10 digits, 2 of which are after the decimal point
-  tags        String
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
-  Cart        Cart[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int            @id @default(autoincrement())
+  name         String
+  description  String         @db.Text //this is bec mysql it restrict to use certain number of character in database @db.Text this make the column text type in database. it is only req in mysql
+  price        Decimal        @db.Decimal(10, 2) // Total 10 digits, 2 of which are after the decimal point
+  tags         String
+  userId       Int
+  user         User           @relation(fields: [userId], references: [id])
+  Cart         Cart[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  OrderProduct OrderProduct[]
 
   @@map("products")
 }
@@ -77,4 +87,42 @@ model Cart {
 
   @@unique([productId, userId]) // Unique constraint on productId and userId
   @@map("cart")
+}
+
+model Order {
+  id           Int            @id @default(autoincrement())
+  userId       Int
+  user         User           @relation(fields: [userId], references: [id])
+  netAmount    Decimal
+  address      String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  OrderProduct OrderProduct[]
+  OrderEvent   OrderEvent[]
+
+  @@map("orders")
+}
+
+model OrderProduct {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("order_products")
+}
+
+model OrderEvent {
+  id        Int              @id @default(autoincrement())
+  orderId   Int
+  status    OrderEventStatus @default(PENDING)
+  order     Order            @relation(fields: [orderId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@map("order_event")
 }
