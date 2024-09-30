@@ -3,6 +3,9 @@ import { prisma } from "../DBconnect/DBconnect";
 import AuthRequest from "../types/AuthRequest";
 import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
+import { InternalException } from "../exceptions/internalException";
+import { date, number } from "zod";
+import { OrderEventStatus } from "@prisma/client";
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
   const abc = prisma.user.findFirst({
@@ -61,12 +64,19 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     return res.status(200).json(order);
   });
 };
-export const update = async (req: Request, res: Response) => {};
-export const getAll = async (req: Request, res: Response) => {
+
+export const getAll = async (req: AuthRequest, res: Response) => {
+  const { query } = req;
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const newpage = limit * (page - 1);
+
   const Allorders = await prisma.order.findMany({
     where: {
       userId: req.user?.id,
     },
+    skip: newpage,
+    take: limit,
   });
   return res.status(200).json(Allorders);
 };
@@ -86,4 +96,115 @@ export const getOrderById = async (req: Request, res: Response) => {
     throw new NotFoundException("order not found", ErrorCode.ORDER_NOT_FOUND);
   }
 };
-export const deleteOrder = async (req: Request, res: Response) => {};
+export const cancelOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.user.findFirstOrThrow({
+        where: {
+          id: req.user?.id,
+        },
+      });
+
+      const order = await tx.order.update({
+        where: {
+          id: +req.params?.id,
+        },
+        data: {
+          status: "CANCELLED",
+        },
+      });
+
+      await tx.orderEvent.create({
+        data: {
+          orderId: order.id,
+          status: "CANCELLED",
+        },
+      });
+      res.status(200).json(order);
+    });
+  } catch (error) {
+    throw new NotFoundException("order not found", ErrorCode.ORDER_NOT_FOUND);
+  }
+};
+
+//admin controller
+
+export const AdminAllOrder = async (req: Request, res: Response) => {
+  try {
+    const { query } = req;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 5;
+    const newPage = limit * (page - 1);
+    let whereClause = {};
+    const status = req.params.status;
+    if (status) {
+      whereClause = {
+        status,
+      };
+    }
+    const Allorders = await prisma.order.findMany({
+      where: whereClause,
+      skip: newPage,
+      take: limit,
+    });
+    return res.status(200).json(Allorders);
+  } catch (error) {
+    throw new InternalException(
+      "failed to fetch order",
+      error,
+      ErrorCode.ORDER_NOT_FOUND
+    );
+  }
+};
+
+export const singleUserOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const { query } = req;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 5;
+    const newPage = limit * (page - 1);
+    const status = req.params.status;
+    const order = await prisma.order.findMany({
+      where: {
+        userId: +req.params?.id,
+        ...(status && { status: status as OrderEventStatus }),
+      },
+
+      skip: newPage,
+      take: limit,
+    });
+    return res.status(200).json(order);
+  } catch (error) {
+    throw new InternalException(
+      "failed to fetch order",
+      error,
+      ErrorCode.ORDER_NOT_FOUND
+    );
+  }
+};
+
+export const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.update({
+        where: { userId: +req.params.id },
+        data: {
+          status: req.body.status,
+        },
+      });
+      await tx.orderEvent.create({
+        data: {
+          orderId: order?.id,
+          status: req.body?.status,
+        },
+      });
+      return res.status(200).json(order);
+    });
+  } catch (error) {
+    throw new InternalException(
+      "failed to fetch order",
+      error,
+      ErrorCode.ORDER_NOT_FOUND
+    );
+  }
+};

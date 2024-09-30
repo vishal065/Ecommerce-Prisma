@@ -6,6 +6,7 @@ import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
 import { BadRequestsException } from "../exceptions/badRequests";
 import AuthRequest from "../types/AuthRequest";
+import { InternalException } from "../exceptions/internalException";
 
 export const updateUser = async (req: AuthRequest, res: Response) => {
   const validatedData = UpdateUserValidator.parse(req.body);
@@ -63,6 +64,58 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     throw new NotFoundException(
       "Address not found",
       ErrorCode.ADDRESS_NOT_FOUND
+    );
+  }
+};
+
+//admin Route
+
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const { query } = req;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const newPage = limit * (page - 1);
+    const AllUsers = await prisma.user.findMany({ skip: newPage, take: limit });
+    return res.status(200).json(AllUsers);
+  } catch (error) {
+    throw new InternalException(
+      "Internal server error",
+      error,
+      ErrorCode.USER_NOT_FOUND
+    );
+  }
+};
+
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    const user = await prisma.user.findFirstOrThrow({
+      where: {
+        id: +req.params.id,
+      },
+    });
+    return res.status(200).json(user);
+  } catch (error) {
+    throw new NotFoundException("user Not found", ErrorCode.USER_NOT_FOUND);
+  }
+};
+
+export const changeRole = async (req: Request, res: Response) => {
+  try {
+    await prisma.user.update({
+      where: {
+        id: +req.params?.id,
+      },
+      data: {
+        role: req.body.role,
+      },
+    });
+    return res.status(200).json({ message: "updated role successfully" });
+  } catch (error) {
+    throw new InternalException(
+      "failed to update the role",
+      error,
+      ErrorCode.INTERNAL_SERVER_ERROR
     );
   }
 };

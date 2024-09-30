@@ -4,9 +4,9 @@ import {
   deleteAddress,
   getAddress,
   updateAddress,
-} from "../Controllers/Address.controller";
-import { asyncHandler } from "../Utils/asyncHandler";
-import AuthMiddleware from "../Middlewares/AuthMiddleware";
+} from "../../Controllers/Address.controller";
+import { asyncHandler } from "../../Utils/asyncHandler";
+import AuthMiddleware from "../../Middlewares/AuthMiddleware";
 
 const AddressRoute = Router();
 

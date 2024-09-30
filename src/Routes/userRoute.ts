@@ -1,11 +1,11 @@
 import { Router } from "express";
 import authRoute from "./authRoute";
-import { AddressRoute } from "./addressRoute";
+import { AddressRoute } from "./UserRoutes/addressRoute";
 import AuthMiddleware from "../Middlewares/AuthMiddleware";
 import { updateUser } from "../Controllers/User.controller";
 import { asyncHandler } from "../Utils/asyncHandler";
-import CartRouter from "./cartRoute";
-import orderRoute from "./orderRoute";
+import CartRouter from "./UserRoutes/cartRoute";
+import orderRoute from "./UserRoutes/orderRoute";
 
 const UserRoute: Router = Router();
 
