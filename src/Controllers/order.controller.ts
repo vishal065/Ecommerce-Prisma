@@ -143,7 +143,8 @@ export const AdminAllOrder = async (req: Request, res: Response) => {
       };
     }
     const Allorders = await prisma.order.findMany({
-      where: whereClause,
+      where: { status: req.params?.status as OrderEventStatus },
+      // where: whereClause,    //both can be use
       skip: newPage,
       take: limit,
     });
@@ -163,10 +164,22 @@ export const singleUserOrder = async (req: AuthRequest, res: Response) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 5;
     const newPage = limit * (page - 1);
-    const status = req.params.status;
+    const status = req.query.status;
+    // const status = req.params.status;
+    // let whereClause: any = {
+    //   userId: +req.params?.id,
+    // };
+    // if (status) {
+    //   whereClause={
+    //     ...whereClause,
+    //     status
+    //   }
+    // }
+
     const order = await prisma.order.findMany({
+      // where :whereClause //both are working fine
       where: {
-        userId: +req.params?.id,
+        userId: +req.query?.id!,
         ...(status && { status: status as OrderEventStatus }),
       },
 
