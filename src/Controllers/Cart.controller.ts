@@ -4,7 +4,6 @@ import { CartUpdateValidation, CartValidation } from "../Validators/CartValidati
 import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
 import AuthRequest from "../types/AuthRequest";
-import { BadRequestsException } from "../exceptions/badRequests";
 
 export const AddToCart = async (req: AuthRequest, res: Response) => {
   const validationData = CartValidation.parse(req.body);

@@ -9,6 +9,8 @@ export const asyncHandler = (fn: Function) => {
     try {
       await fn(req, res, next);
     } catch (error: any) {
+      console.log(error);
+
       let exception: HttpException;
 
       if (error instanceof HttpException) {

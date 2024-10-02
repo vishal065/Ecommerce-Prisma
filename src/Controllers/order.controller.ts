@@ -4,16 +4,9 @@ import AuthRequest from "../types/AuthRequest";
 import { NotFoundException } from "../exceptions/notFound";
 import { ErrorCode } from "../exceptions/root";
 import { InternalException } from "../exceptions/internalException";
-import { date, number } from "zod";
 import { OrderEventStatus } from "@prisma/client";
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
-  const abc = prisma.user.findFirst({
-    where: {
-      id: req.user?.id,
-    },
-  });
-
   const user = await prisma.$transaction(async (tx) => {
     const cartItem = await tx.cart.findMany({
       where: {
@@ -54,12 +47,15 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    console.log("order", order);
+
     const orderEvent = await tx.orderEvent.create({
       data: {
         orderId: order?.id,
       },
     });
 
+    console.log("orderEvent", orderEvent);
     await tx.cart.deleteMany({ where: { userId: req.user?.id } });
     return res.status(200).json(order);
   });
@@ -164,7 +160,7 @@ export const singleUserOrder = async (req: AuthRequest, res: Response) => {
     const page = Number(query.page) || 1;
     const limit = Number(query.limit) || 5;
     const newPage = limit * (page - 1);
-    const status = req.query.status;
+    const status = String(req.query.status);
     // const status = req.params.status;
     // let whereClause: any = {
     //   userId: +req.params?.id,
@@ -175,11 +171,12 @@ export const singleUserOrder = async (req: AuthRequest, res: Response) => {
     //     status
     //   }
     // }
+    console.log(page, limit, newPage, status, "data");
 
     const order = await prisma.order.findMany({
       // where :whereClause //both are working fine
       where: {
-        userId: +req.query?.id!,
+        userId: +req.query?.userId!,
         ...(status && { status: status as OrderEventStatus }),
       },
 
@@ -198,9 +195,12 @@ export const singleUserOrder = async (req: AuthRequest, res: Response) => {
 
 export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
+    console.log(req.query?.orderId);
+    console.log(req.body.status);
+
     await prisma.$transaction(async (tx) => {
       const order = await tx.order.update({
-        where: { userId: +req.params.id },
+        where: { id: Number(req.query?.orderId) },
         data: {
           status: req.body.status,
         },

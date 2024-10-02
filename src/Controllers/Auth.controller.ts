@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { compareSync, hashSync } from "bcrypt";
 import { prisma } from "../DBconnect/DBconnect";
-import { asyncHandler } from "../Utils/asyncHandler";
 import * as jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../secrets";
 import { BadRequestsException } from "../exceptions/badRequests";
@@ -48,7 +47,7 @@ export const signup = async (
 
 export const login = async (req: Request, res: Response) => {
   const { email, password: pass } = req.body;
-  const user = await prisma.user.findFirst({ where: { email } });
+  const user = await prisma.user.findFirstOrThrow({ where: { email } });
 
   if (!user) {
     throw new NotFoundException("User not found.", ErrorCode.USER_NOT_FOUND);

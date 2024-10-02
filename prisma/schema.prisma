@@ -101,7 +101,6 @@ model Order {
   OrderProduct OrderProduct[]
   OrderEvent   OrderEvent[]
 
-  @@unique([userId])
   @@map("orders")
 }
 
