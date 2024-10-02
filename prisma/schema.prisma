@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -57,6 +58,7 @@ model Product {
   updatedAt    DateTime       @updatedAt
   OrderProduct OrderProduct[]
 
+  @@fulltext([name, description, tags])
   @@map("products")
 }
 

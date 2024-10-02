@@ -1,5 +1,7 @@
 if we dont install dotenv we can also do add this to command "exec": "npx ts-node -r dotenv/config ./src/index.ts"
-$ npx prisma migrate dev --name addedAddressModel
+npx prisma migrate dev --name addedAddressModel
+npx prisma generate
+npx prisma migrate dev --name addedAddressModel
 
 
 

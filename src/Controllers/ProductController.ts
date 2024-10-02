@@ -75,4 +75,27 @@ const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 
-export { addProducts, updateProduct, getAllProducts, deleteProduct };
+const searchProduct = async (req: Request, res: Response) => {
+  const product = await prisma.product.findMany({
+    where: {
+      name: {
+        search: req.query.q?.toString(),
+      },
+      description: {
+        search: req.query.q?.toString(),
+      },
+      tags: {
+        search: req.query.q?.toString(),
+      },
+    },
+  });
+  return res.status(200).json(product);
+};
+
+export {
+  addProducts,
+  updateProduct,
+  getAllProducts,
+  deleteProduct,
+  searchProduct,
+};

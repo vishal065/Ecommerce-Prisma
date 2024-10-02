@@ -5,6 +5,7 @@ import {
   addProducts,
   deleteProduct,
   getAllProducts,
+  searchProduct,
   updateProduct,
 } from "../Controllers/ProductController";
 import { asyncHandler } from "../Utils/asyncHandler";
@@ -23,5 +24,7 @@ productRoute.route("/getAllProduct").get(asyncHandler(getAllProducts));
 productRoute
   .route("/delete/:id")
   .delete([AuthMiddleware, adminMiddleware], asyncHandler(deleteProduct));
+
+productRoute.route("/search?q").get(asyncHandler(searchProduct));
 
 export default productRoute;
