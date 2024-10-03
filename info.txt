@@ -3,6 +3,14 @@ npx prisma migrate dev --name addedAddressModel
 npx prisma generate
 npx prisma migrate dev --name addedAddressModel
 
+// for production
+"build":"npx tsc"       // in package.json
+npx prisma migrate deploy   
+npm install pm2 -g
+pm2 start build/index.js
+pm2 logs
+pm2 status
+
 
 
 1. user management
